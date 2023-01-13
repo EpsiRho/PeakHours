@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "PeakHoursClient (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "PeakHoursClient (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
