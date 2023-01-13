@@ -13,7 +13,23 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <Button x:Name="myButton" Click="myButton_Click">Click Me</Button>
-    </StackPanel>
+    <Grid Background="#1e1e1e">
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <DatePicker HorizontalAlignment="Left" 
+                        Margin="10,10,10,10"
+                        x:Name="DateSelector"/>
+            <TimePicker HorizontalAlignment="Left" 
+                        Margin="10,10,10,10"
+                        x:Name="TimeSelector"/>
+            <Button x:Name="SendEntryButton" 
+                    Content="Send Entry"
+                    Margin="10"
+                    HorizontalAlignment="Left"
+                    Click="SendEntryButton_Click"/>
+        </StackPanel>
+        <TextBlock x:Name="IDText" 
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Bottom"
+                       Margin="10"/>
+    </Grid>
 </winex:WindowEx>

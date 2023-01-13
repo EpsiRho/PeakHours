@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using PeakHoursClient.Classes;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -29,11 +30,19 @@ namespace PeakHoursClient
         public MainWindow()
         {
             this.InitializeComponent();
+            OnLoad();
         }
 
-        private void myButton_Click(object sender, RoutedEventArgs e)
+        private void OnLoad()
         {
+            Filesystem.Init();
+            IDText.Text = Filesystem.ID;
+        }
 
+        private void SendEntryButton_Click(object sender, RoutedEventArgs e)
+        {
+            DateTime date = 
+            Networking.SendRQ(Filesystem.ID,)
         }
     }
 }
