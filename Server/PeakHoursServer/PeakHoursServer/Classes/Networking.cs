@@ -24,13 +24,15 @@ namespace PeakHoursServer.Classes
                 Socket listener = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
                 listener.ReceiveTimeout = 1000;
                 listener.SendTimeout = 1000;
+                listener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.DontLinger, true);
+                listener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
 
                 // Bind socket to end point
                 listener.Bind(localEndPoint);
 
                 // Wait
                 Display.Messages.Add($"[+] Beacon Active");
-                listener.Listen(10);
+                listener.Listen();
                 try
                 {
                     while (true)
@@ -67,6 +69,9 @@ namespace PeakHoursServer.Classes
                 // Get the socket
                 Socket listener = (Socket)ar.AsyncState;
                 Socket conn = listener.EndAccept(ar);
+
+                conn.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.DontLinger, true);
+                conn.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
                 conn.ReceiveTimeout = 1000;
                 conn.SendTimeout = 1000;
                 Display.Messages.Add($"\n[!] Connection Acquired");
@@ -83,9 +88,11 @@ namespace PeakHoursServer.Classes
                 conn.Receive(dateTimeBuffer);
                 conn.Receive(dateTimeUTCBuffer);
                 conn.Send(acceptBuffer);
+                
 
                 // Close
-                conn.Close();
+                conn.Shutdown(SocketShutdown.Both);
+                conn.Disconnect(true);
                 Display.Messages.Add($"[-] Connection Terminated by server");
 
                 // Convert
