@@ -20,6 +20,8 @@ namespace PeakHoursServer.Classes
             // Save stack to file
             string text = JsonConvert.SerializeObject(entries);
             File.WriteAllText(".\\Entries.json", text);
+
+            Display.Messages.Add($"[!] Entry {entries.Count()}/1000 Saved");
         }
         public static void LoadEntries() 
         {

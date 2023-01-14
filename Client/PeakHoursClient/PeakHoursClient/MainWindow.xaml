@@ -26,10 +26,48 @@
                     Margin="10"
                     HorizontalAlignment="Left"
                     Click="SendEntryButton_Click"/>
+            <Button x:Name="SendLocalButton"
+                    Content="Send Local Entries"
+                    Margin="10"
+                    HorizontalAlignment="Left"
+                    Visibility="Collapsed"
+                    Click="SendLocalButton_Click">
+                <FlyoutBase.AttachedFlyout>
+                    <Flyout x:Name="ErrorFlyout" Placement="Bottom">
+                        <Grid>
+                            <TextBlock Text="Make sure to set the date and time!"/>
+                        </Grid>
+                    </Flyout>
+                </FlyoutBase.AttachedFlyout>
+            </Button>
+            <ProgressBar x:Name="StatusBar"
+                         HorizontalAlignment="Stretch"
+                         IsIndeterminate="True"
+                         Margin="10,0,10,0"
+                         Visibility="Collapsed"/>
         </StackPanel>
+
         <TextBlock x:Name="IDText" 
                        HorizontalAlignment="Right"
                        VerticalAlignment="Bottom"
-                       Margin="10"/>
+                       Margin="10">
+            <FlyoutBase.AttachedFlyout>
+                <Flyout x:Name="SentFlyout" Placement="TopEdgeAlignedLeft">
+                    <Grid>
+                        <TextBlock Text="Entry Sent!"/>
+                    </Grid>
+                </Flyout>
+            </FlyoutBase.AttachedFlyout>
+        </TextBlock>
+
+        <ContentDialog x:Name="LocalDialog"
+                       IsPrimaryButtonEnabled="True"
+                       Title="Looks like we can't reach the server!"
+                       PrimaryButtonText="ok">
+            <StackPanel>
+                <TextBlock Text="We'll save this and any other entries locally for now, then you can try to send them in later."
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+        </ContentDialog>
     </Grid>
 </winex:WindowEx>

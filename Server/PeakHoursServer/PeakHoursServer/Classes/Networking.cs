@@ -14,14 +14,16 @@ namespace PeakHoursServer.Classes
         public static void Beacon()
         {
             Display.Messages.Add($"[+] Starting Beacon");
-            // Open beacon on local ip and port 69420
+            // Open beacon on local ip and port 4444
             IPAddress ipAddr = IPAddress.Parse("0.0.0.0");
-            IPEndPoint localEndPoint = new IPEndPoint(ipAddr, 69420);
+            IPEndPoint localEndPoint = new IPEndPoint(ipAddr, 25565);
 
             try
             {
                 // Create socket
                 Socket listener = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                listener.ReceiveTimeout = 1000;
+                listener.SendTimeout = 1000;
 
                 // Bind socket to end point
                 listener.Bind(localEndPoint);
@@ -35,56 +37,71 @@ namespace PeakHoursServer.Classes
                     {
                         // Accept a connection and push it to another thread, continue listening.
                         allDone.Reset();
+                        Display.Messages.Add($"1");
                         listener.BeginAccept(new AsyncCallback(AcceptCallback), listener);
+                        Display.Messages.Add($"2");
                         allDone.WaitOne();
+                        Display.Messages.Add($"3");
                     }
                 }
                 catch(Exception e)
                 {
                     // Fuck
-                    Console.WriteLine(e.Message);
+                    Display.Messages.Add($"[!] Beacon Failure 1: {e.Message}");
                 }
             }
             catch(Exception e)
             {
                 // Fuck again
-                Console.WriteLine(e.Message);
+                Display.Messages.Add($"[!] Beacon Failure 2: {e.Message}");
             }
         }
 
         private static void AcceptCallback(IAsyncResult ar)
         {
-            // Tell the main thread to continue without us
-            allDone.Set();
+            try
+            {
+                // Tell the main thread to continue without us
+                allDone.Set();
 
-            // Get the socket
-            Socket listener = (Socket)ar.AsyncState;
-            Socket conn = listener.EndAccept(ar);
-            Display.Messages.Add($"[!] Connection Acquired");
+                // Get the socket
+                Socket listener = (Socket)ar.AsyncState;
+                Socket conn = listener.EndAccept(ar);
+                conn.ReceiveTimeout = 1000;
+                conn.SendTimeout = 1000;
+                Display.Messages.Add($"\n[!] Connection Acquired");
 
-            // Create the byte buffers for sending and recieving
-            byte[] idBuffer = new byte[4];
-            byte[] dateTimeBuffer = new byte[22];
-            byte[] acceptBuffer = Encoding.ASCII.GetBytes("OK");
+                // Create the byte buffers for sending and recieving
+                byte[] idBuffer = new byte[4];
+                byte[] dateTimeBuffer = new byte[22];
+                byte[] dateTimeUTCBuffer = new byte[22];
+                byte[] acceptBuffer = Encoding.ASCII.GetBytes("OK");
 
-            // Exchange
-            conn.Receive(idBuffer);
-            conn.Send(acceptBuffer);
-            conn.Receive(dateTimeBuffer);
+                // Exchange
+                conn.Receive(idBuffer);
+                conn.Send(acceptBuffer);
+                conn.Receive(dateTimeBuffer);
+                conn.Receive(dateTimeUTCBuffer);
+                conn.Send(acceptBuffer);
 
-            // Close
-            conn.Close();
-            Display.Messages.Add($"[+] Connection Terminated by server");
+                // Close
+                conn.Close();
+                Display.Messages.Add($"[-] Connection Terminated by server");
 
-            // Convert
-            string id = Encoding.ASCII.GetString(idBuffer);
-            DateTime time = DateTime.Parse(Encoding.ASCII.GetString(dateTimeBuffer));
+                // Convert
+                string id = Encoding.ASCII.GetString(idBuffer);
+                DateTime time = DateTime.Parse(Encoding.ASCII.GetString(dateTimeBuffer));
+                DateTime timeUTC = DateTime.Parse(Encoding.ASCII.GetString(dateTimeUTCBuffer));
 
-            Entry e = new Entry(id, time);
+                Entry e = new Entry(id, time, timeUTC);
 
-            Records.SaveEntry(e);
-
-            Display.Messages.Add($"[!] Entry Saved");
+                Records.SaveEntry(e);
+            }
+            catch(Exception e)
+            {
+                Display.Messages.Add($"[!] Failed to recv: {e.Message}");
+            }
+            
         }
     }
 }

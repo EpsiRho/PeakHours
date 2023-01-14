@@ -18,6 +18,7 @@ namespace PeakHoursServer.Classes
                 {
                     Console.WriteLine(Messages[0]);
                     Messages.RemoveAt(0);
+                    Thread.Sleep(100);
                 }
             }
         }

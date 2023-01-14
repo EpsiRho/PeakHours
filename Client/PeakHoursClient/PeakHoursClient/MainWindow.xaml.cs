@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
@@ -35,14 +36,82 @@ namespace PeakHoursClient
 
         private void OnLoad()
         {
-            Filesystem.Init();
+            bool local = Filesystem.Init();
+            if (local)
+            {
+                SendLocalButton.Visibility = Visibility.Visible;
+            }
             IDText.Text = Filesystem.ID;
         }
 
-        private void SendEntryButton_Click(object sender, RoutedEventArgs e)
+        private async void SendEntryButton_Click(object sender, RoutedEventArgs e)
         {
-            DateTime date = 
-            Networking.SendRQ(Filesystem.ID,)
+            if(DateSelector.SelectedDate == null || TimeSelector.SelectedTime == null)
+            {
+                ErrorFlyout.ShowAt(SendEntryButton);
+                return;
+            }
+            StatusBar.Visibility = Visibility.Visible;
+
+            DateTime date = DateSelector.Date.LocalDateTime;
+            TimeSpan time = TimeSelector.Time;
+            DateTime timestamp = new DateTime(date.Year, date.Month, date.Day, time.Hours, time.Minutes, time.Seconds);
+
+            DateTime dateUTC = DateSelector.Date.UtcDateTime;
+            TimeSpan timeUTC = TimeSelector.Time;
+            DateTime timestampUTC = new DateTime(dateUTC.Year, dateUTC.Month, dateUTC.Day, time.Hours, time.Minutes, time.Seconds);
+            timestampUTC = timestampUTC.ToUniversalTime();
+
+            await Task.Run(() => {
+                bool sent = Networking.SendRQ(Filesystem.ID, timestamp, timestampUTC);
+                if (!sent)
+                {
+                    this.DispatcherQueue.TryEnqueue(() =>
+                    {
+                        LocalDialog.ShowAsync();
+                        SendLocalButton.Visibility = Visibility.Visible;
+                    });
+                }
+                else
+                {
+                    this.DispatcherQueue.TryEnqueue(() =>
+                    {
+                        SentFlyout.ShowAt(IDText);
+                    });
+                }
+            });
+            StatusBar.Visibility = Visibility.Collapsed;
+            DateSelector.SelectedDate = null;
+            TimeSelector.SelectedTime = null;
+        }
+
+        private async void SendLocalButton_Click(object sender, RoutedEventArgs e)
+        {
+            StatusBar.Visibility = Visibility.Visible;
+            await Task.Run(() => {
+                foreach (var entry in Filesystem.entries)
+                {
+                    bool sent = Networking.SendRQ(Filesystem.ID, entry.Time, entry.TimeUTC);
+                    if (!sent)
+                    {
+                        this.DispatcherQueue.TryEnqueue(() =>
+                        {
+                            LocalDialog.ShowAsync();
+                            SendLocalButton.Visibility = Visibility.Visible;
+                        });
+                        break;
+                    }
+                    else
+                    {
+                        this.DispatcherQueue.TryEnqueue(() =>
+                        {
+                            SentFlyout.ShowAt(IDText);
+                        });
+                    }
+                }
+            });
+            StatusBar.Visibility = Visibility.Collapsed;
+            SendLocalButton.Visibility = Visibility.Collapsed;
         }
     }
 }

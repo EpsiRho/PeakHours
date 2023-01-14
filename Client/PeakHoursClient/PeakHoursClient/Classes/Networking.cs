@@ -10,24 +10,46 @@ namespace PeakHoursClient.Classes
 {
     public static class Networking
     {
-        public static void SendRQ(string ID, DateTime time)
+        public static bool SendRQ(string ID, DateTime time, DateTime timeUTC)
         {
-            // Get the remote end point of the server
-            IPAddress ipAddr = IPAddress.Parse("");
-            IPEndPoint remoteEndPoint = new IPEndPoint(ipAddr, 69420);
-
-            // Create the socket
-            Socket sock = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-
-            // Connect to the server
-            sock.Connect(remoteEndPoint);
-
-            // Exchange
-            if(sock.Connected)
+            try
             {
-                //byte[] ID = 
-                //sock.Send()
+                // Get the remote end point of the server
+                IPAddress ipAddr = IPAddress.Parse("");
+                IPEndPoint remoteEndPoint = new IPEndPoint(ipAddr, 25565);
+
+                // Create the socket
+                Socket sock = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+
+                sock.SendTimeout = 1000;
+                sock.ReceiveTimeout = 1000;
+
+                // Connect to the server
+                sock.Connect(remoteEndPoint);
+
+                // Exchange
+                if (sock.Connected)
+                {
+                    byte[] idBytes = Encoding.ASCII.GetBytes(ID);
+                    byte[] timeBytes = Encoding.ASCII.GetBytes(time.ToString("MM/dd/yyyy hh:mm:ss tt"));
+                    byte[] timeUTCBytes = Encoding.ASCII.GetBytes(timeUTC.ToString("MM/dd/yyyy hh:mm:ss tt"));
+                    byte[] ok = new byte[2];
+
+                    sock.Send(idBytes);
+                    sock.Receive(ok);
+                    sock.Send(timeBytes);
+                    sock.Send(timeUTCBytes);
+                    sock.Receive(ok);
+                }
+
+                sock.Close();
             }
+            catch(Exception e)
+            {
+                Filesystem.SaveLocalEntry(new Entry(ID, time, timeUTC));
+                return false;
+            }
+            return true;
         }
     }
 }
