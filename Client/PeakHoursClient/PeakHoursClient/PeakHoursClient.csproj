@@ -11,7 +11,12 @@
     <UseWinUI>true</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
 	<WindowsPackageType>None</WindowsPackageType>
+	<ApplicationIcon>sweat-droplets_1f4a6.ico</ApplicationIcon>
+	<SignAssembly>False</SignAssembly>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Package.appxmanifest" />
+  </ItemGroup>
 
   <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -21,6 +26,8 @@
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\StoreLogo.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+    <Content Include="Package.appxmanifest" />
+    <Content Include="sweat-droplets_1f4a6.ico" />
   </ItemGroup>
 
   <ItemGroup>

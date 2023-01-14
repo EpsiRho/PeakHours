@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -18,5 +19,10 @@ namespace PeakHoursClient.Classes
             Time = time;
             TimeUTC = timeUTC;
         }
+    }
+    public class EntryPass
+    {
+        public Entry entry;
+        public Socket sock;
     }
 }

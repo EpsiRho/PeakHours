@@ -22,10 +22,12 @@ namespace PeakHoursServer.Classes
             {
                 // Create socket
                 Socket listener = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-                listener.ReceiveTimeout = 1000;
-                listener.SendTimeout = 1000;
+                listener.ReceiveTimeout = -1;
+                listener.SendTimeout = -1;
                 listener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.DontLinger, true);
                 listener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                listener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.NoDelay, true);
+                listener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Linger, false);
 
                 // Bind socket to end point
                 listener.Bind(localEndPoint);
@@ -39,11 +41,8 @@ namespace PeakHoursServer.Classes
                     {
                         // Accept a connection and push it to another thread, continue listening.
                         allDone.Reset();
-                        Display.Messages.Add($"1");
                         listener.BeginAccept(new AsyncCallback(AcceptCallback), listener);
-                        Display.Messages.Add($"2");
                         allDone.WaitOne();
-                        Display.Messages.Add($"3");
                     }
                 }
                 catch(Exception e)
@@ -72,6 +71,10 @@ namespace PeakHoursServer.Classes
 
                 conn.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.DontLinger, true);
                 conn.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                conn.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Linger, false);
+                conn.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.NoDelay, true);
+                conn.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, false);
+                conn.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.TcpKeepAliveRetryCount, 0);
                 conn.ReceiveTimeout = 1000;
                 conn.SendTimeout = 1000;
                 Display.Messages.Add($"\n[!] Connection Acquired");
@@ -84,16 +87,15 @@ namespace PeakHoursServer.Classes
 
                 // Exchange
                 conn.Receive(idBuffer);
-                conn.Send(acceptBuffer);
+                //conn.Send(acceptBuffer);
                 conn.Receive(dateTimeBuffer);
                 conn.Receive(dateTimeUTCBuffer);
-                conn.Send(acceptBuffer);
+                //conn.Send(acceptBuffer);
                 
 
                 // Close
-                conn.Shutdown(SocketShutdown.Both);
-                conn.Disconnect(true);
-                Display.Messages.Add($"[-] Connection Terminated by server");
+                //conn.Shutdown(SocketShutdown.Both);
+                Display.Messages.Add($"[-] Connection Terminated");
 
                 // Convert
                 string id = Encoding.ASCII.GetString(idBuffer);
@@ -103,6 +105,7 @@ namespace PeakHoursServer.Classes
                 Entry e = new Entry(id, time, timeUTC);
 
                 Records.SaveEntry(e);
+                conn.Disconnect(true);
             }
             catch(Exception e)
             {
