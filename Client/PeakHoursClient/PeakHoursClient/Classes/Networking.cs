@@ -15,7 +15,7 @@ namespace PeakHoursClient.Classes
             try
             {
                 // Get the remote end point of the server
-                IPAddress ipAddr = IPAddress.Parse("71.146.161.50");
+                IPAddress ipAddr = IPAddress.Parse("");
                 IPEndPoint remoteEndPoint = new IPEndPoint(ipAddr, 25565);
 
                 // Create the socket
