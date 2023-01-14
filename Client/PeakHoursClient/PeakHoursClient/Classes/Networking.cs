@@ -15,12 +15,14 @@ namespace PeakHoursClient.Classes
             try
             {
                 // Get the remote end point of the server
-                IPAddress ipAddr = IPAddress.Parse("");
+                IPAddress ipAddr = IPAddress.Parse("71.146.161.50");
                 IPEndPoint remoteEndPoint = new IPEndPoint(ipAddr, 25565);
 
                 // Create the socket
                 Socket sock = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
+                sock.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.DontLinger, true);
+                sock.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
                 sock.SendTimeout = 1000;
                 sock.ReceiveTimeout = 1000;
 
@@ -42,6 +44,8 @@ namespace PeakHoursClient.Classes
                     sock.Receive(ok);
                 }
 
+                sock.Shutdown(SocketShutdown.Both);
+                sock.Disconnect(true);
                 sock.Close();
             }
             catch(Exception e)
